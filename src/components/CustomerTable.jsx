@@ -1,6 +1,7 @@
 // components/CustomerTable.jsx: search + sortable headers.
 // Filter text and sort choice are state; the visible rows are DERIVED each render.
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 // One place that turns a customer's date into the text the user sees.
 // Search matches this same text, so "what you see is what you can search".
@@ -66,7 +67,9 @@ export default function CustomerTable({ customers }) {
           <tbody>
             {visible.map(c => (
               <tr key={c.id}>
-                <td>{c.id}</td><td>{c.name}</td><td>{c.email}</td>
+                <td>{c.id}</td>
+                <td><Link to={`/customers/${c.id}`}>{c.name}</Link></td>
+                <td>{c.email}</td>
                 <td>{fmtDate(c.createdAt)}</td>
               </tr>
             ))}
