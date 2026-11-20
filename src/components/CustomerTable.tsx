@@ -2,23 +2,30 @@
 // Filter text and sort choice are state; the visible rows are DERIVED each render.
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import type { Customer } from '../types'
 
 // One place that turns a customer's date into the text the user sees.
 // Search matches this same text, so "what you see is what you can search".
-const fmtDate = v => (v ? new Date(v).toLocaleString() : '')
+const fmtDate = (v: string | null) => (v ? new Date(v).toLocaleString() : '')
 
-const COLUMNS = [
+// `keyof Customer` = one of 'id' | 'name' | 'email' | 'createdAt'. A typo like 'nmae' is now an error.
+const COLUMNS: { key: keyof Customer; label: string }[] = [
   { key: 'id', label: 'ID' },
   { key: 'name', label: 'Name' },
   { key: 'email', label: 'Email' },
   { key: 'createdAt', label: 'Created' },
 ]
 
-export default function CustomerTable({ customers, onDelete }) {
+interface Props {
+  customers: Customer[]
+  onDelete?: (id: number) => Promise<unknown> | void   // optional: no Delete buttons without it
+}
+
+export default function CustomerTable({ customers, onDelete }: Props) {
   const [query, setQuery] = useState('')
-  const [confirmId, setConfirmId] = useState(null)   // which row is showing "Delete? Yes / No"
-  const [sortKey, setSortKey] = useState('id')
-  const [sortDir, setSortDir] = useState('asc')
+  const [confirmId, setConfirmId] = useState<number | null>(null)   // which row is showing "Delete? Yes / No"
+  const [sortKey, setSortKey] = useState<keyof Customer>('id')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
 
   // Hooks must run before any early return.
   if (!customers.length) return <p>No customers yet.</p>
@@ -40,7 +47,7 @@ export default function CustomerTable({ customers, onDelete }) {
       return sortDir === 'asc' ? cmp : -cmp
     })
 
-  function toggleSort(key) {
+  function toggleSort(key: keyof Customer) {
     if (key === sortKey) setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))
     else { setSortKey(key); setSortDir('asc') }
   }
@@ -55,7 +62,7 @@ export default function CustomerTable({ customers, onDelete }) {
       {visible.length === 0 ? (
         <p>No matches.</p>
       ) : (
-        <table border="1" cellPadding="6" style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <table border={1} cellPadding={6} style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
             <tr>
               {COLUMNS.map(col => (

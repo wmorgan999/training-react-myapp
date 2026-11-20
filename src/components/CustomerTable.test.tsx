@@ -2,20 +2,21 @@ import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, fireEvent, cleanup, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import CustomerTable from './CustomerTable'
+import type { Customer } from '../types'
 
 afterEach(cleanup) // without this, each render piles up on the page
 
-const data = [
+const data: Customer[] = [
   { id: 1, name: 'Ada Lovelace', email: 'ada@example.com', createdAt: '2024-03-10T12:00:00Z' },
   { id: 2, name: 'Grace Hopper', email: 'grace@example.com', createdAt: '2026-11-19T18:00:00Z' },
 ]
 
 // <Link> needs a router around it; MemoryRouter is a fake one for tests
-const renderTable = (rows, onDelete) =>
+const renderTable = (rows: Customer[], onDelete?: (id: number) => Promise<unknown> | void) =>
   render(<MemoryRouter><CustomerTable customers={rows} onDelete={onDelete} /></MemoryRouter>)
 
 const bodyNames = () =>
-  screen.getAllByRole('row').slice(1).map(r => within(r).getAllByRole('cell')[1].textContent)
+  screen.getAllByRole('row').slice(1).map(r => within(r).getAllByRole('cell')[1]?.textContent)
 
 describe('CustomerTable', () => {
   it('shows the empty message', () => {
@@ -68,10 +69,10 @@ describe('CustomerTable', () => {
   })
 
   it('asks for confirmation, and only deletes after "Yes"', async () => {
-    const onDelete = vi.fn().mockResolvedValue()
+    const onDelete = vi.fn().mockResolvedValue(undefined)
     renderTable(data, onDelete)
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Delete' })[1])   // Grace's row
+    fireEvent.click(screen.getAllByRole('button', { name: 'Delete' })[1]!)   // Grace's row
     expect(onDelete).not.toHaveBeenCalled()                                  // just asked
     expect(screen.getByText(/Delete\?/)).toBeTruthy()
 
@@ -82,7 +83,7 @@ describe('CustomerTable', () => {
   it('"No" cancels the delete', () => {
     const onDelete = vi.fn()
     renderTable(data, onDelete)
-    fireEvent.click(screen.getAllByRole('button', { name: 'Delete' })[0])
+    fireEvent.click(screen.getAllByRole('button', { name: 'Delete' })[0]!)
     fireEvent.click(screen.getByRole('button', { name: 'No' }))
     expect(onDelete).not.toHaveBeenCalled()
     expect(screen.getAllByRole('button', { name: 'Delete' })).toHaveLength(2)

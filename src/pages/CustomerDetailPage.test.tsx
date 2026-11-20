@@ -7,7 +7,7 @@ import CustomerDetailPage from './CustomerDetailPage'
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
 // Render the page at a URL, with fetch replaced by a fake response
-function renderAt(url, response) {
+function renderAt(url: string, response: object) {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response))
   render(
     <MemoryRouter initialEntries={[url]}>
@@ -36,9 +36,9 @@ describe('CustomerDetailPage', () => {
 
   // Edit flow: first fetch loads the customer, second is the PUT
   const ada = { id: 1, name: 'Ada Lovelace', email: 'ada@example.com', createdAt: null }
-  const ok = body => ({ ok: true, status: 200, json: async () => body })
+  const ok = (body: object) => ({ ok: true, status: 200, json: async () => body })
 
-  function renderEditable(putResponse) {
+  function renderEditable(putResponse: object) {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(ok(ada))
       .mockResolvedValueOnce(putResponse)
@@ -61,10 +61,10 @@ describe('CustomerDetailPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     expect(await screen.findByText('Ada King')).toBeTruthy()      // back to read-only view
-    const [url, init] = fetchMock.mock.calls[1]
+    const [url, init] = fetchMock.mock.calls[1] ?? []
     expect(url).toBe('/api/customers/1')
-    expect(init.method).toBe('PUT')
-    expect(JSON.parse(init.body)).toEqual({ name: 'Ada King', email: 'ada@example.com' })
+    expect(init?.method).toBe('PUT')
+    expect(JSON.parse(init?.body)).toEqual({ name: 'Ada King', email: 'ada@example.com' })
   })
 
   it('shows the 409 message and stays in the form', async () => {

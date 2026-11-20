@@ -1,6 +1,17 @@
-// components/CustomerForm.jsx: owns its own input state.
+// components/CustomerForm.tsx: owns its own input state.
 // Used for both "add" (empty) and "edit" (pass initial values, a label and onCancel).
 import { useState } from 'react'
+import type { FormEvent } from 'react'
+import type { CustomerInput } from '../types'
+
+// The props are a contract: the parent must pass onSubmit, everything with `?` is optional.
+interface Props {
+  onSubmit: (data: CustomerInput) => Promise<unknown> | void
+  initial?: CustomerInput
+  submitLabel?: string
+  clearOnSubmit?: boolean
+  onCancel?: () => void
+}
 
 export default function CustomerForm({
   onSubmit,
@@ -8,11 +19,11 @@ export default function CustomerForm({
   submitLabel = 'Add',
   clearOnSubmit = true,
   onCancel,
-}) {
+}: Props) {
   const [name, setName] = useState(initial.name)
   const [email, setEmail] = useState(initial.email)
 
-  const handle = async e => {
+  const handle = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
       await onSubmit({ name, email })   // parent decides what "submit" means

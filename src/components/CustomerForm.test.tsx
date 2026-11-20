@@ -23,7 +23,7 @@ test('edit mode: starts with the given values, shows its label, can cancel', asy
   render(<CustomerForm initial={{ name: 'Ada', email: 'ada@example.com' }}
     submitLabel="Save" clearOnSubmit={false} onSubmit={onSubmit} onCancel={onCancel} />)
 
-  expect(screen.getByPlaceholderText('Name').value).toBe('Ada')
+  expect((screen.getByPlaceholderText('Name') as HTMLInputElement).value).toBe('Ada')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   expect(onSubmit).toHaveBeenCalledWith({ name: 'Ada', email: 'ada@example.com' })
 
@@ -39,5 +39,5 @@ test('keeps what was typed when onSubmit fails', async () => {
   await userEvent.type(screen.getByPlaceholderText('Email'), 'ada@example.com')
   await userEvent.click(screen.getByRole('button', { name: 'Add' }))
 
-  expect(screen.getByPlaceholderText('Name').value).toBe('Ada')   // not cleared
+  expect((screen.getByPlaceholderText('Name') as HTMLInputElement).value).toBe('Ada')   // not cleared
 })
