@@ -14,8 +14,9 @@ const COLUMNS = [
   { key: 'createdAt', label: 'Created' },
 ]
 
-export default function CustomerTable({ customers }) {
+export default function CustomerTable({ customers, onDelete }) {
   const [query, setQuery] = useState('')
+  const [confirmId, setConfirmId] = useState(null)   // which row is showing "Delete? Yes / No"
   const [sortKey, setSortKey] = useState('id')
   const [sortDir, setSortDir] = useState('asc')
 
@@ -62,6 +63,7 @@ export default function CustomerTable({ customers }) {
                   {col.label}{sortKey === col.key ? (sortDir === 'asc' ? ' ▲' : ' ▼') : ''}
                 </th>
               ))}
+              {onDelete && <th></th>}
             </tr>
           </thead>
           <tbody>
@@ -71,6 +73,19 @@ export default function CustomerTable({ customers }) {
                 <td><Link to={`/customers/${c.id}`}>{c.name}</Link></td>
                 <td>{c.email}</td>
                 <td>{fmtDate(c.createdAt)}</td>
+                {onDelete && (
+                  <td>
+                    {confirmId === c.id ? (
+                      <>
+                        Delete?{' '}
+                        <button onClick={async () => { await onDelete(c.id); setConfirmId(null) }}>Yes</button>{' '}
+                        <button onClick={() => setConfirmId(null)}>No</button>
+                      </>
+                    ) : (
+                      <button onClick={() => setConfirmId(c.id)}>Delete</button>
+                    )}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

@@ -52,6 +52,7 @@ mock-api.mjs                  stand-in API on port 8080
 
 ## Notes
 
-- A duplicate email makes the API (real and stand-in) return HTTP 500, so the form shows "Save failed: 500".
+- A duplicate email makes the API (real and stand-in) return HTTP 409, and the app shows "That email is already registered." (An API built before exercise 6 returns 500 instead, shown as "Save failed: 500".)
+- Each table row has a Delete button with a Yes/No confirm; the detail page has an Edit form. These need the API's `DELETE` and `PUT` endpoints (exercise 6).
 - The stand-in API's data resets whenever you restart it.
 - `npm run lint` reports one warning (`set-state-in-effect`) in `useCustomers.js`. The code is correct; it's the standard fetch-in-an-effect pattern, which the lint rule discourages for data loading.

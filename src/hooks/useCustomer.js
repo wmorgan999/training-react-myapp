@@ -1,5 +1,5 @@
 // hooks/useCustomer.js: load ONE customer; re-runs when `id` changes
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { getCustomer } from '../api/customers'
 
 export function useCustomer(id) {
@@ -17,5 +17,9 @@ export function useCustomer(id) {
     return () => { ignore = true }   // cleanup runs before the next effect and on unmount
   }, [id])
 
-  return state
+  // After a successful edit, the API returns the saved customer: show it without re-fetching.
+  const setCustomer = useCallback(
+    customer => setState({ status: 'ready', customer, error: '' }), [])
+
+  return { ...state, setCustomer }
 }

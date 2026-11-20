@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, fireEvent, cleanup, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import CustomerTable from './CustomerTable'
@@ -11,8 +11,8 @@ const data = [
 ]
 
 // <Link> needs a router around it; MemoryRouter is a fake one for tests
-const renderTable = rows =>
-  render(<MemoryRouter><CustomerTable customers={rows} /></MemoryRouter>)
+const renderTable = (rows, onDelete) =>
+  render(<MemoryRouter><CustomerTable customers={rows} onDelete={onDelete} /></MemoryRouter>)
 
 const bodyNames = () =>
   screen.getAllByRole('row').slice(1).map(r => within(r).getAllByRole('cell')[1].textContent)
@@ -60,5 +60,31 @@ describe('CustomerTable', () => {
     fireEvent.click(screen.getByText(/^Name/))
     fireEvent.click(screen.getByText(/^Name/))
     expect(copy).toEqual(data)
+  })
+
+  it('has no Delete buttons unless onDelete is given', () => {
+    renderTable(data)
+    expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull()
+  })
+
+  it('asks for confirmation, and only deletes after "Yes"', async () => {
+    const onDelete = vi.fn().mockResolvedValue()
+    renderTable(data, onDelete)
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Delete' })[1])   // Grace's row
+    expect(onDelete).not.toHaveBeenCalled()                                  // just asked
+    expect(screen.getByText(/Delete\?/)).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Yes' }))
+    expect(onDelete).toHaveBeenCalledWith(2)
+  })
+
+  it('"No" cancels the delete', () => {
+    const onDelete = vi.fn()
+    renderTable(data, onDelete)
+    fireEvent.click(screen.getAllByRole('button', { name: 'Delete' })[0])
+    fireEvent.click(screen.getByRole('button', { name: 'No' }))
+    expect(onDelete).not.toHaveBeenCalled()
+    expect(screen.getAllByRole('button', { name: 'Delete' })).toHaveLength(2)
   })
 })
